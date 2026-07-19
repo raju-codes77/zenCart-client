@@ -98,7 +98,10 @@ export default function CheckoutPage() {
     );
   }
 
-  const subtotal = cart?.items.reduce((acc, item: any) => acc + ((item.productId?.price || item.product?.price || 0) * item.qty), 0) || 0;
+  const subtotal = cart?.items.reduce((acc, item) => {
+    const price = typeof item.productId === 'object' ? item.productId.price || 0 : item.product?.price || 0;
+    return acc + (price * item.qty);
+  }, 0) || 0;
   const shipping = subtotal > 50 ? 0 : 10;
   const tax = subtotal * 0.08;
   const total = subtotal + shipping + tax;
@@ -174,28 +177,36 @@ export default function CheckoutPage() {
               
               <div className="flow-root mb-6">
                 <ul className="-my-4 divide-y divide-gray-200">
-                  {cart?.items.map((item) => (
-                    <li key={item.productId} className="flex py-4 space-x-4">
-                      <div className="flex-shrink-0 w-16 h-16 border border-gray-200 rounded-md overflow-hidden">
-                        <img
-                          src={item.productId?.images?.[0] || item.product?.images?.[0] || 'https://via.placeholder.com/150'}
-                          alt={item.productId?.title || item.product?.title || 'Product'}
-                          className="w-full h-full object-center object-cover"
-                        />
-                      </div>
-                      <div className="flex-1 flex flex-col">
-                        <div>
-                          <div className="flex justify-between text-sm font-medium text-gray-900">
-                            <h3 className="line-clamp-1">{item.productId?.title || item.product?.title}</h3>
-                            <p className="ml-4">${(item.productId?.price || item.product?.price || 0).toFixed(2)}</p>
+                  {cart?.items.map((item) => {
+                    const p = typeof item.productId === 'object' ? item.productId : item.product;
+                    const pid = typeof item.productId === 'string' ? item.productId : item.productId._id;
+                    const images = p?.images || [];
+                    const title = p?.title || 'Product';
+                    const price = p?.price || 0;
+
+                    return (
+                      <li key={pid} className="flex py-4 space-x-4">
+                        <div className="flex-shrink-0 w-16 h-16 border border-gray-200 rounded-md overflow-hidden">
+                          <img
+                            src={images[0] || 'https://via.placeholder.com/150'}
+                            alt={title}
+                            className="w-full h-full object-center object-cover"
+                          />
+                        </div>
+                        <div className="flex-1 flex flex-col">
+                          <div>
+                            <div className="flex justify-between text-sm font-medium text-gray-900">
+                              <h3 className="line-clamp-1">{title}</h3>
+                              <p className="ml-4">${price.toFixed(2)}</p>
+                            </div>
+                          </div>
+                          <div className="flex-1 flex items-end justify-between text-sm">
+                            <p className="text-gray-500">Qty {item.qty}</p>
                           </div>
                         </div>
-                        <div className="flex-1 flex items-end justify-between text-sm">
-                          <p className="text-gray-500">Qty {item.qty}</p>
-                        </div>
-                      </div>
-                    </li>
-                  ))}
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
 

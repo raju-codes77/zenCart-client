@@ -8,9 +8,15 @@ export interface User {
   createdAt: string;
 }
 
+export type UserRef = string | {
+  _id: string;
+  name: string;
+  avatarUrl?: string;
+};
+
 export interface Product {
   id: string;
-  sellerId?: string;
+  sellerId?: UserRef;
   title: string;
   shortDescription: string;
   fullDescription: string;
@@ -31,8 +37,15 @@ export interface Product {
   updatedAt: string;
 }
 
+export type ProductRef = string | {
+  _id: string;
+  title: string;
+  price?: number;
+  images?: string[];
+};
+
 export interface OrderItem {
-  productId: string;
+  productId: ProductRef;
   title: string;
   price: number;
   qty: number;
@@ -71,7 +84,7 @@ export interface Review {
 }
 
 export interface CartItem {
-  productId: string;
+  productId: ProductRef;
   qty: number;
   product?: Product;
 }

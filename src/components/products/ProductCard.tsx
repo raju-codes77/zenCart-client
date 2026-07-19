@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Product } from '@/types';
+import { Product, Cart } from '@/types';
 import { useAuth } from '@/lib/auth-context';
 import { FiStar, FiShoppingCart } from 'react-icons/fi';
 import api from '@/lib/api';
@@ -31,25 +31,25 @@ export default function ProductCard({ product }: ProductCardProps) {
     setIsAdding(true);
     try {
       const res = await api.get('/cart');
-      const cart = res.data.data;
+      const cart: Cart = res.data.data;
       const productId = product._id || product.id;
-      const existingItem = cart?.items?.find((item: any) => 
-        (item.productId?._id || item.productId) === productId
-      );
+      const existingItem = cart?.items?.find(item => {
+        const pId = typeof item.productId === 'string' ? item.productId : item.productId._id;
+        return pId === productId;
+      });
       
-      let newItems = cart?.items || [];
+      let newItems = cart?.items ? [...cart.items] : [];
       if (existingItem) {
-        newItems = newItems.map((item: any) => 
-          (item.productId?._id || item.productId) === productId 
-            ? { ...item, qty: item.qty + 1 } 
-            : item
-        );
+        newItems = newItems.map(item => {
+          const pId = typeof item.productId === 'string' ? item.productId : item.productId._id;
+          return pId === productId ? { ...item, qty: item.qty + 1 } : item;
+        });
       } else {
         newItems.push({ productId, qty: 1 });
       }
       
-      const updatePayload = newItems.map((item: any) => ({
-        productId: item.productId?._id || item.productId,
+      const updatePayload = newItems.map(item => ({
+        productId: typeof item.productId === 'string' ? item.productId : item.productId._id,
         qty: item.qty
       }));
       

@@ -51,19 +51,24 @@ export default function CartPage() {
 
   const handleUpdateQty = (productId: string, newQty: number) => {
     if (!cart) return;
-    const items = cart.items.map(item => 
-      item.productId === productId ? { ...item, qty: newQty } : item
-    ).filter(item => item.qty > 0);
+    const items = cart.items.map(item => {
+      const pId = typeof item.productId === 'string' ? item.productId : item.productId._id;
+      return pId === productId ? { ...item, qty: newQty } : item;
+    }).filter(item => item.qty > 0);
     
     // For updating via API, we just need the array of { productId, qty }
-    updateCart(items.map(i => ({ productId: i.productId, qty: i.qty })));
+    updateCart(items.map(i => ({ 
+      productId: typeof i.productId === 'string' ? i.productId : (i.productId as { _id: string })._id, 
+      qty: i.qty 
+    })));
     
     // Optimistic update
     setCart({
       ...cart,
-      items: cart.items.map(item => 
-        item.productId === productId ? { ...item, qty: newQty } : item
-      ).filter(item => item.qty > 0)
+      items: cart.items.map(item => {
+        const pId = typeof item.productId === 'string' ? item.productId : item.productId._id;
+        return pId === productId ? { ...item, qty: newQty } : item;
+      }).filter(item => item.qty > 0)
     });
   };
 
@@ -73,7 +78,10 @@ export default function CartPage() {
 
   if (!user) return null;
 
-  const subtotal = cart?.items.reduce((acc, item: any) => acc + ((item.productId?.price || item.product?.price || 0) * item.qty), 0) || 0;
+  const subtotal = cart?.items.reduce((acc, item) => {
+    const price = typeof item.productId === 'object' ? item.productId.price || 0 : item.product?.price || 0;
+    return acc + (price * item.qty);
+  }, 0) || 0;
   const shipping = subtotal > 50 ? 0 : 10;
   const tax = subtotal * 0.08; // 8% tax
   const total = subtotal + shipping + tax;
@@ -95,64 +103,72 @@ export default function CartPage() {
         <div className="lg:grid lg:grid-cols-12 lg:gap-x-12 lg:items-start">
           <div className="lg:col-span-8">
             <ul className="border-t border-b border-gray-200 divide-y divide-gray-200">
-              {cart.items.map((item) => (
-                <li key={item.productId} className="flex py-6 sm:py-10">
-                  <div className="flex-shrink-0">
-                    <img
-                      src={(item.productId as any)?.images?.[0] || (item.product as any)?.images?.[0] || 'https://via.placeholder.com/150'}
-                      alt={(item.productId as any)?.title || (item.product as any)?.title || 'Product'}
-                      className="w-24 h-24 rounded-md object-cover object-center sm:w-32 sm:h-32"
-                    />
-                  </div>
+              {cart.items.map((item) => {
+                const p = typeof item.productId === 'object' ? item.productId : item.product;
+                const pid = typeof item.productId === 'string' ? item.productId : item.productId._id;
+                const images = p?.images || [];
+                const title = p?.title || 'Product';
+                const price = p?.price || 0;
 
-                  <div className="ml-4 flex-1 flex flex-col justify-between sm:ml-6">
-                    <div className="relative pr-9 sm:grid sm:grid-cols-2 sm:gap-x-6 sm:pr-0">
-                      <div>
-                        <div className="flex justify-between">
-                          <h3 className="text-sm">
-                            <Link href={`/products/${item.productId?._id || item.productId || item.product?._id}`} className="font-medium text-gray-700 hover:text-gray-800">
-                              {item.productId?.title || item.product?.title}
-                            </Link>
-                          </h3>
-                        </div>
-                        <p className="mt-1 text-sm font-medium text-gray-900">${(item.productId?.price || item.product?.price || 0).toFixed(2)}</p>
-                      </div>
-
-                      <div className="mt-4 sm:mt-0 sm:pr-9">
-                        <div className="flex items-center border border-gray-300 rounded-md w-max">
-                          <button
-                            onClick={() => handleUpdateQty(item.productId, item.qty - 1)}
-                            className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors"
-                          >
-                            <Minus className="h-4 w-4" />
-                          </button>
-                          <span className="px-4 py-2 text-gray-900 font-medium">{item.qty}</span>
-                          <button
-                            onClick={() => handleUpdateQty(item.productId, item.qty + 1)}
-                            className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors"
-                          >
-                            <Plus className="h-4 w-4" />
-                          </button>
-                        </div>
-
-                        <div className="absolute top-0 right-0">
-                          <button
-                            type="button"
-                            onClick={() => handleUpdateQty(item.productId, 0)}
-                            className="-m-2 p-2 inline-flex text-gray-400 hover:text-gray-500 transition-colors"
-                          >
-                            <span className="sr-only">Remove</span>
-                            <Trash2 className="h-5 w-5" aria-hidden="true" />
-                          </button>
-                        </div>
-                      </div>
+                return (
+                  <li key={pid} className="flex py-6 sm:py-10">
+                    <div className="flex-shrink-0">
+                      <img
+                        src={images[0] || 'https://via.placeholder.com/150'}
+                        alt={title}
+                        className="w-24 h-24 rounded-md object-cover object-center sm:w-32 sm:h-32"
+                      />
                     </div>
-                    <p className="mt-4 flex text-sm text-gray-700 space-x-2">
-                      <span>Total: ${( (item.productId?.price || item.product?.price || 0) * item.qty ).toFixed(2)}</span>
-                    </p>
-                  </div>
-                </li>
-              ))}
+
+                    <div className="ml-4 flex-1 flex flex-col justify-between sm:ml-6">
+                      <div className="relative pr-9 sm:grid sm:grid-cols-2 sm:gap-x-6 sm:pr-0">
+                        <div>
+                          <div className="flex justify-between">
+                            <h3 className="text-sm">
+                              <Link href={`/products/${pid}`} className="font-medium text-gray-700 hover:text-gray-800">
+                                {title}
+                              </Link>
+                            </h3>
+                          </div>
+                          <p className="mt-1 text-sm font-medium text-gray-900">${price.toFixed(2)}</p>
+                        </div>
+
+                        <div className="mt-4 sm:mt-0 sm:pr-9">
+                          <div className="flex items-center border border-gray-300 rounded-md w-max">
+                            <button
+                              onClick={() => handleUpdateQty(pid, item.qty - 1)}
+                              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors"
+                            >
+                              <Minus className="h-4 w-4" />
+                            </button>
+                            <span className="px-4 py-2 text-gray-900 font-medium">{item.qty}</span>
+                            <button
+                              onClick={() => handleUpdateQty(pid, item.qty + 1)}
+                              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors"
+                            >
+                              <Plus className="h-4 w-4" />
+                            </button>
+                          </div>
+
+                          <div className="absolute top-0 right-0">
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateQty(pid, 0)}
+                              className="-m-2 p-2 inline-flex text-gray-400 hover:text-gray-500 transition-colors"
+                            >
+                              <span className="sr-only">Remove</span>
+                              <Trash2 className="h-5 w-5" aria-hidden="true" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      <p className="mt-4 flex text-sm text-gray-700 space-x-2">
+                        <span>Total: ${( price * item.qty ).toFixed(2)}</span>
+                      </p>
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           </div>
 

@@ -28,12 +28,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (session?.user) {
       // Map BetterAuth user to our User type
       setUser({
-        _id: session.user.id,
         id: session.user.id,
         name: session.user.name,
         email: session.user.email,
-        role: (session.user as any).role || 'buyer',
+        role: 'role' in session.user && typeof session.user.role === 'string' ? session.user.role : 'buyer',
         avatarUrl: session.user.image || undefined,
+        provider: 'local',
         createdAt: session.user.createdAt.toISOString(),
       });
       // BetterAuth handles cookies securely. We don't need access token headers anymore.

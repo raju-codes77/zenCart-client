@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useProduct, useRelatedProducts } from '@/hooks/useProducts';
 import { useAuth } from '@/lib/auth-context';
 import api from '@/lib/api';
+import { Cart } from '@/types';
 import ProductGallery from '@/components/products/ProductGallery';
 import ProductCard from '@/components/products/ProductCard';
 import ReviewCard, { Review } from '@/components/reviews/ReviewCard';
@@ -81,25 +82,25 @@ export default function ProductDetailsPage() {
     setIsAddingToCart(true);
     try {
       const res = await api.get('/cart');
-      const cart = res.data.data;
+      const cart: Cart = res.data.data;
       const productId = product._id || product.id;
-      const existingItem = cart?.items?.find((item: any) => 
-        (item.productId?._id || item.productId) === productId
-      );
+      const existingItem = cart?.items?.find(item => {
+        const pId = typeof item.productId === 'string' ? item.productId : item.productId._id;
+        return pId === productId;
+      });
       
-      let newItems = cart?.items || [];
+      let newItems = cart?.items ? [...cart.items] : [];
       if (existingItem) {
-        newItems = newItems.map((item: any) => 
-          (item.productId?._id || item.productId) === productId 
-            ? { ...item, qty: item.qty + 1 } 
-            : item
-        );
+        newItems = newItems.map(item => {
+          const pId = typeof item.productId === 'string' ? item.productId : item.productId._id;
+          return pId === productId ? { ...item, qty: item.qty + 1 } : item;
+        });
       } else {
         newItems.push({ productId, qty: 1 });
       }
       
-      const updatePayload = newItems.map((item: any) => ({
-        productId: item.productId?._id || item.productId,
+      const updatePayload = newItems.map(item => ({
+        productId: typeof item.productId === 'string' ? item.productId : item.productId._id,
         qty: item.qty
       }));
       
@@ -156,7 +157,7 @@ export default function ProductDetailsPage() {
             <span className="text-sm text-gray-500">{reviewsTotal} Reviews</span>
             <span className="text-gray-300">|</span>
             <span className="text-sm text-gray-500">
-              Sold by <span className="font-semibold text-gray-700">{product.sellerId?.name || 'Unknown'}</span>
+              Sold by <span className="font-semibold text-gray-700">{typeof product.sellerId === 'string' ? 'Unknown' : product.sellerId?.name || 'Unknown'}</span>
             </span>
           </div>
 
