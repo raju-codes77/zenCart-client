@@ -60,7 +60,7 @@ export default function CartPage() {
     // For updating via API, we just need the array of { productId, qty }
     updateCart(items.map(i => {
       const p = i.product || i.productId;
-      return { productId: typeof p === 'string' ? p : (p?._id || p?.id), qty: i.qty };
+      return { productId: (typeof p === 'string' ? p : (p?._id || p?.id)) as string, qty: i.qty };
     }));
     
     // Optimistic update
