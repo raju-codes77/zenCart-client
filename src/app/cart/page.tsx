@@ -53,14 +53,14 @@ export default function CartPage() {
     if (!cart) return;
     const items = cart.items.map(item => {
       const p = item.product || item.productId;
-      const pId = p?._id || p?.id;
+      const pId = typeof p === 'string' ? p : (p?._id || p?.id);
       return pId === productId ? { ...item, qty: newQty } : item;
     }).filter(item => item.qty > 0);
     
     // For updating via API, we just need the array of { productId, qty }
     updateCart(items.map(i => {
       const p = i.product || i.productId;
-      return { productId: p?._id || p?.id, qty: i.qty };
+      return { productId: typeof p === 'string' ? p : (p?._id || p?.id), qty: i.qty };
     }));
     
     // Optimistic update
@@ -68,7 +68,7 @@ export default function CartPage() {
       ...cart,
       items: cart.items.map(item => {
         const p = item.product || item.productId;
-        const pId = p?._id || p?.id;
+        const pId = typeof p === 'string' ? p : (p?._id || p?.id);
         return pId === productId ? { ...item, qty: newQty } : item;
       }).filter(item => item.qty > 0)
     });
