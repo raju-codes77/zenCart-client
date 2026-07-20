@@ -150,13 +150,50 @@ function LoginForm() {
         </button>
       </form>
 
-      <div className="mt-6">
+      <div className="mt-6 space-y-3">
         <button
           onClick={handleDemoLogin}
           disabled={isLoading}
           className="w-full flex justify-center py-2.5 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
         >
-          Try as Buyer
+          Try as Buyer (Demo)
+        </button>
+        <button
+          onClick={async () => {
+            const adminEmail = 'admin@zencart.app';
+            const adminPassword = 'AdminPassword123!';
+            setEmail(adminEmail);
+            setPassword(adminPassword);
+            setIsLoading(true);
+            setError('');
+            try {
+              await login({ email: adminEmail, password: adminPassword });
+              toast.success('Logged in as Admin');
+              router.push('/dashboard');
+            } catch (err: any) {
+              const msg = err.message || err.response?.data?.message || '';
+              if (msg.toLowerCase().includes('user not found') || msg.toLowerCase().includes('invalid')) {
+                try {
+                  await register({ name: 'Admin User', email: adminEmail, password: adminPassword });
+                  await login({ email: adminEmail, password: adminPassword });
+                  toast.success('Admin account created and logged in!');
+                  router.push('/dashboard');
+                } catch (regErr: any) {
+                  toast.error('Failed to create admin account.');
+                  setError('Failed to login or register admin account.');
+                }
+              } else {
+                toast.error('Failed to login as admin.');
+                setError('Failed to login as admin.');
+              }
+            } finally {
+              setIsLoading(false);
+            }
+          }}
+          disabled={isLoading}
+          className="w-full flex justify-center py-2.5 px-4 border border-indigo-200 rounded-lg shadow-sm text-sm font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+        >
+          Login as Admin
         </button>
       </div>
 

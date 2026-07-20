@@ -70,8 +70,9 @@ export default function CheckoutPage() {
       
       const response = await api.post('/orders/create-checkout-session', { shippingAddress });
       
-      if (response.data.url) {
-        window.location.href = response.data.url;
+      const url = response.data.data?.url || response.data.url;
+      if (url) {
+        window.location.href = url;
       } else {
         throw new Error('Failed to retrieve checkout URL');
       }
@@ -177,11 +178,11 @@ export default function CheckoutPage() {
               
               <div className="flow-root mb-6">
                 <ul className="-my-4 divide-y divide-gray-200">
-                  {cart?.items.map((item) => {
-                    const p = typeof item.productId === 'object' ? item.productId : item.product;
-                    const pid = typeof item.productId === 'string' ? item.productId : item.productId._id;
+                  {cart?.items.map((item, idx) => {
+                    const p = item.product || item.productId;
+                    const pid = p?._id || p?.id || `item-${idx}`;
                     const images = p?.images || [];
-                    const title = p?.title || 'Product';
+                    const title = p?.title || p?.name || 'Product';
                     const price = p?.price || 0;
 
                     return (

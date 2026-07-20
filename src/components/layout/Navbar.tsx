@@ -56,6 +56,9 @@ export default function Navbar() {
                     <Link href="/items/manage" className="font-medium text-slate-600 hover:text-indigo-600 transition-colors">
                       Manage Items
                     </Link>
+                    <Link href="/orders/manage" className="font-medium text-slate-600 hover:text-indigo-600 transition-colors">
+                      Manage Orders
+                    </Link>
                     <Link href="/items/add" className="font-medium text-indigo-600 hover:text-indigo-700 transition-colors bg-indigo-50 hover:bg-indigo-100 px-4 py-2 rounded-full">
                       Sell a Product
                     </Link>
@@ -157,6 +160,9 @@ export default function Navbar() {
                   </Link>
                   <Link href="/items/manage" onClick={toggleMobileMenu} className="block px-3 py-3 text-base font-medium text-gray-900 hover:bg-gray-50 rounded-lg">
                     Manage Items
+                  </Link>
+                  <Link href="/orders/manage" onClick={toggleMobileMenu} className="block px-3 py-3 text-base font-medium text-gray-900 hover:bg-gray-50 rounded-lg">
+                    Manage Orders
                   </Link>
                   <Link href="/items/add" onClick={toggleMobileMenu} className="block px-3 py-3 text-base font-medium text-gray-900 hover:bg-gray-50 rounded-lg">
                     Sell a Product

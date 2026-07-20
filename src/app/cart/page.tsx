@@ -52,21 +52,23 @@ export default function CartPage() {
   const handleUpdateQty = (productId: string, newQty: number) => {
     if (!cart) return;
     const items = cart.items.map(item => {
-      const pId = typeof item.productId === 'string' ? item.productId : item.productId._id;
+      const p = item.product || item.productId;
+      const pId = p?._id || p?.id;
       return pId === productId ? { ...item, qty: newQty } : item;
     }).filter(item => item.qty > 0);
     
     // For updating via API, we just need the array of { productId, qty }
-    updateCart(items.map(i => ({ 
-      productId: typeof i.productId === 'string' ? i.productId : (i.productId as { _id: string })._id, 
-      qty: i.qty 
-    })));
+    updateCart(items.map(i => {
+      const p = i.product || i.productId;
+      return { productId: p?._id || p?.id, qty: i.qty };
+    }));
     
     // Optimistic update
     setCart({
       ...cart,
       items: cart.items.map(item => {
-        const pId = typeof item.productId === 'string' ? item.productId : item.productId._id;
+        const p = item.product || item.productId;
+        const pId = p?._id || p?.id;
         return pId === productId ? { ...item, qty: newQty } : item;
       }).filter(item => item.qty > 0)
     });
@@ -79,7 +81,7 @@ export default function CartPage() {
   if (!user) return null;
 
   const subtotal = cart?.items.reduce((acc, item) => {
-    const price = typeof item.productId === 'object' ? item.productId.price || 0 : item.product?.price || 0;
+    const price = typeof item.productId === 'object' && item.productId !== null ? item.productId.price || 0 : item.product?.price || 0;
     return acc + (price * item.qty);
   }, 0) || 0;
   const shipping = subtotal > 50 ? 0 : 10;
@@ -103,11 +105,11 @@ export default function CartPage() {
         <div className="lg:grid lg:grid-cols-12 lg:gap-x-12 lg:items-start">
           <div className="lg:col-span-8">
             <ul className="border-t border-b border-gray-200 divide-y divide-gray-200">
-              {cart.items.map((item) => {
-                const p = typeof item.productId === 'object' ? item.productId : item.product;
-                const pid = typeof item.productId === 'string' ? item.productId : item.productId._id;
+              {cart.items.map((item, idx) => {
+                const p = item.product || item.productId;
+                const pid = p?._id || p?.id || `item-${idx}`;
                 const images = p?.images || [];
-                const title = p?.title || 'Product';
+                const title = p?.title || p?.name || 'Product';
                 const price = p?.price || 0;
 
                 return (

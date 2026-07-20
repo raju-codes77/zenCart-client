@@ -34,24 +34,31 @@ export default function ProductCard({ product }: ProductCardProps) {
       const cart: Cart = res.data.data;
       const productId = product._id || product.id;
       const existingItem = cart?.items?.find(item => {
-        const pId = typeof item.productId === 'string' ? item.productId : item.productId._id;
-        return pId === productId;
+        const itemPId = item.productId || item.product;
+        if (!itemPId) return false;
+        const pId = (typeof itemPId === 'string' || typeof itemPId === 'number') ? itemPId.toString() : (itemPId._id || itemPId.id)?.toString();
+        return pId === productId?.toString();
       });
       
       let newItems = cart?.items ? [...cart.items] : [];
       if (existingItem) {
         newItems = newItems.map(item => {
-          const pId = typeof item.productId === 'string' ? item.productId : item.productId._id;
-          return pId === productId ? { ...item, qty: item.qty + 1 } : item;
+          const itemPId = item.productId || item.product;
+          if (!itemPId) return item;
+          const pId = (typeof itemPId === 'string' || typeof itemPId === 'number') ? itemPId.toString() : (itemPId._id || itemPId.id)?.toString();
+          return pId === productId?.toString() ? { ...item, qty: item.qty + 1 } : item;
         });
       } else {
         newItems.push({ productId, qty: 1 });
       }
       
-      const updatePayload = newItems.map(item => ({
-        productId: typeof item.productId === 'string' ? item.productId : item.productId._id,
-        qty: item.qty
-      }));
+      const updatePayload = newItems.map(item => {
+        const itemPId = item.productId || item.product;
+        return {
+          productId: (typeof itemPId === 'string' || typeof itemPId === 'number') ? itemPId.toString() : (itemPId?._id || itemPId?.id)?.toString(),
+          qty: item.qty
+        };
+      });
       
       await api.put('/cart', { items: updatePayload });
       queryClient.invalidateQueries({ queryKey: ['cart'] });

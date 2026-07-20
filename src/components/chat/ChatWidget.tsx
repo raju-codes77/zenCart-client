@@ -45,9 +45,13 @@ export default function ChatWidget() {
       
       const data = await response.json();
       
-      setMessages((prev) => [...prev, { role: 'assistant', content: data.reply || 'Sorry, I encountered an error.' }]);
+      if (!response.ok || data.success === false) {
+        setMessages((prev) => [...prev, { role: 'assistant', content: data.message || data.error || 'Sorry, I encountered an error.' }]);
+      } else {
+        setMessages((prev) => [...prev, { role: 'assistant', content: data.data?.reply || data.reply || 'Sorry, I could not generate a response.' }]);
+      }
     } catch (error) {
-      setMessages((prev) => [...prev, { role: 'assistant', content: 'Sorry, I encountered an error connecting to the server.' }]);
+      setMessages((prev) => [...prev, { role: 'assistant', content: 'Sorry, I encountered a network error connecting to the server.' }]);
     } finally {
       setIsLoading(false);
     }
