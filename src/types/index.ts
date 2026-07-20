@@ -16,6 +16,7 @@ export type UserRef = string | {
 
 export interface Product {
   id: string;
+  _id?: string;
   sellerId?: UserRef;
   title: string;
   shortDescription: string;
@@ -39,6 +40,7 @@ export interface Product {
 
 export type ProductRef = string | {
   _id: string;
+  id?: string;
   title: string;
   price?: number;
   images?: string[];
