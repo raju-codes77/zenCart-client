@@ -5,7 +5,7 @@ export const setAccessToken = (token: string | null) => { accessToken = token; }
 export const getAccessToken = () => accessToken;
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api',
+  baseURL: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:5000'}/api`,
   withCredentials: true,
 });
 
@@ -25,7 +25,7 @@ api.interceptors.response.use(
       originalRequest._retry = true;
       try {
         const res = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/auth/refresh`,
+          `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:5000'}/api/auth/refresh`,
           {},
           { withCredentials: true }
         );

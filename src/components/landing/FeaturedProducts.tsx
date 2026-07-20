@@ -14,7 +14,7 @@ export default function FeaturedProducts() {
     const fetchFeatured = async () => {
       try {
         const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/products?sort=rating_desc&limit=8`
+          `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:5000'}/api/products?sort=rating_desc&limit=8`
         );
         // Assuming paginated response or direct array
         const data = response.data.data?.items || response.data.data || [];

@@ -16,7 +16,7 @@ export default function StatsSection() {
     const fetchStats = async () => {
       try {
         const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/stats`
+          `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:5000'}/api/stats`
         );
         if (response.data?.data) {
           setStats(response.data.data);
